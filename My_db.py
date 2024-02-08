@@ -1,8 +1,10 @@
+import tkinter as tk
+from tkinter import messagebox
 import sqlite3
 import getpass
 
-def connect_to_database(special_db):
-    conn = sqlite3.connect(special_db)
+def connect_to_database(special_db): 
+    conn = sqlite3.connect(special_db) #here anyone using this can modify the path to the desired file where the database should be located 
     return conn
 
 def create_products_table(conn):
@@ -18,12 +20,14 @@ def create_products_table(conn):
     ''')
     conn.commit()
 
+# adding a product to the database and display the message using messagebox in tkinter (this messagebox brings back memories from 2000)
 def add_product(conn, name, quantity, price, last_modified):
     cursor = conn.cursor()
     cursor.execute('''
         INSERT INTO products (name, quantity, price, last_modified) VALUES (?, ?, ?, ?)
     ''', (name, quantity, price, last_modified))
     conn.commit()
+    messagebox.showinfo("Success", "Product added successfully!")
 
 def retrieve_products(conn):
     cursor = conn.cursor()
@@ -31,77 +35,52 @@ def retrieve_products(conn):
     products = cursor.fetchall()
     return products
 
-def update_product(conn, product_id, name, quantity, price, last_modified):
-    cursor = conn.cursor()
-    cursor.execute('''
-        UPDATE products SET name=?, quantity=?, price=? WHERE id=?, last_modified
-    ''', (name, quantity, price, product_id, last_modified))
-    conn.commit()
+
+# Function to create the GUI and handle adding a product using get() method
+def add_product_gui():
+    name = name_entry.get()
+    quantity = quantity_entry.get()
+    price = price_entry.get()
+    username = getpass.getuser()
+    add_product(conn, name, quantity, price, username)
+
+special_db = 'inventory.db'
+conn = connect_to_database(special_db)
+create_products_table(conn)
+
+# Tkinter window
+window = tk.Tk()
+window.title("Inventory Management")
+
+# labels and entry fields
+name_label = tk.Label(window, text="Product Name:")
+name_label.grid(row=0, column=0, padx=10, pady=5)
+name_entry = tk.Entry(window)
+name_entry.grid(row=0, column=1, padx=10, pady=5)
+
+quantity_label = tk.Label(window, text="Quantity:")
+quantity_label.grid(row=1, column=0, padx=10, pady=5)
+quantity_entry = tk.Entry(window)
+quantity_entry.grid(row=1, column=1, padx=10, pady=5)
+
+price_label = tk.Label(window, text="Price:")
+price_label.grid(row=2, column=0, padx=10, pady=5)
+price_entry = tk.Entry(window)
+price_entry.grid(row=2, column=1, padx=10, pady=5)
+
+add_button = tk.Button(window, text="Add Product", command=add_product_gui)
+add_button.grid(row=3, column=0, columnspan=2, padx=10, pady=5, sticky="we")
+
+def show_inventory():
+    products = retrieve_products(conn)
+    if products:
+        messagebox.showinfo("Inventory", "\n".join([f"{product[1]} - Quantity: {product[2]}, Price: {product[3]}, Last Modified By: {product[4]}" for product in products]))
+    else:
+        messagebox.showinfo("Inventory", "No products found!")
+
+# Create and place the "Show Inventory" button
+show_inventory_button = tk.Button(window, text="Show Inventory", command=show_inventory)
+show_inventory_button.grid(row=4, column=0, columnspan=2, padx=10, pady=5, sticky="we")
 
 
-def delete_product(conn, product_id):
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM products WHERE id=?', (product_id,))
-    conn.commit()
-
-
-
-#Creating main function:
-    
-def main():
-    special_db = 'inventory.db'
-    conn = connect_to_database(special_db)
-    create_products_table(conn)
-
-    while True:
-        print("\nOptions:")
-        print("1. Add Product")
-        print("2. Retrieve Products")
-        print("3. Update Product")
-        print("4. Delete Product")
-        print("5. Exit")
-
-        choice = input("Enter your choice: ")
-
-        if choice == '1':
-            name = input("Enter product name: ")
-            quantity = int(input("Enter quantity: "))
-            price = float(input("Enter price: "))
-            username = getpass.getuser() 
-            add_product(conn, name, quantity, price, username)
-            print("Product added successfully!")
-
-        elif choice == '2':
-            products = retrieve_products(conn)
-            if products:
-                print("\nAll Products:")
-                for product in products:
-                    print(product)
-            else:
-                print("No products found!")
-
-        elif choice == '3':
-            product_id = int(input("Enter product ID to update: "))
-            name = input("Enter new name: ")
-            quantity = int(input("Enter new quantity: "))
-            price = float(input("Enter new price: "))
-            username = getpass.getuser()
-            update_product(conn, product_id, name, quantity, price, username)
-            print("Product updated successfully!")
-
-        elif choice == '4':
-            product_id = int(input("Enter product ID to delete: "))
-            delete_product(conn, product_id)
-            print("Product deleted successfully!")
-
-        elif choice == '5':
-            print("Exiting program...")
-            break
-
-        else:
-            print("Invalid choice. Please try again.")
-
-    conn.close()
-
-if __name__ == "__main__":
-    main()
+window.mainloop()
