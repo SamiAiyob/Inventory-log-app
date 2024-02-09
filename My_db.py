@@ -79,9 +79,6 @@ price_label.grid(row=2, column=0, padx=10, pady=5)
 price_entry = tk.Entry(window)
 price_entry.grid(row=2, column=1, padx=10, pady=5)
 
-add_button = tk.Button(window, text="Add Product", command=add_product_gui)
-add_button.grid(row=3, column=0, columnspan=2, padx=10, pady=5, sticky="we")
-
 product_id_label = tk.Label(window, text="Product ID to Delete:")
 product_id_label.grid(row=4, column=0, padx=10, pady=5)
 product_id_entry = tk.Entry(window)
@@ -94,11 +91,15 @@ def show_inventory():
     else:
         messagebox.showinfo("Inventory", "No products found!")
 
-# Create and place the "Show Inventory" button as well as delete button
-show_inventory_button = tk.Button(window, text="Show Inventory", command=show_inventory)
+# Create and place the "Show Inventory" button as well as delete and add buttons
+        
+add_button = tk.Button(window, text="Add Product", command=add_product_gui, fg="white", bg="green")
+add_button.grid(row=3, column=0, columnspan=2, padx=10, pady=5, sticky="we")
+
+show_inventory_button = tk.Button(window, text="Show Inventory", command=show_inventory, fg="white", bg="blue")
 show_inventory_button.grid(row=6, column=0, columnspan=2, padx=10, pady=5, sticky="we")
 
-delete_button = tk.Button(window, text="Delete Product", command=delete_product_gui)
+delete_button = tk.Button(window, text="Delete Product", command=delete_product_gui, fg="white", bg="red")
 delete_button.grid(row=5, column=0, columnspan=2, padx=10, pady=5, sticky="we")
 
 
