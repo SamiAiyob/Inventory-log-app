@@ -35,6 +35,12 @@ def retrieve_products(conn):
     products = cursor.fetchall()
     return products
 
+def delete_product(conn, product_id):
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM products WHERE id=?', (product_id,))
+    conn.commit()
+    messagebox.showinfo("Success", "Product deleted successfully!")
+
 
 # Function to create the GUI and handle adding a product using get() method
 def add_product_gui():
@@ -43,6 +49,11 @@ def add_product_gui():
     price = price_entry.get()
     username = getpass.getuser()
     add_product(conn, name, quantity, price, username)
+
+def delete_product_gui():
+    product_id = int(product_id_entry.get())
+    delete_product(conn, product_id)
+
 
 special_db = 'inventory.db'
 conn = connect_to_database(special_db)
@@ -71,16 +82,24 @@ price_entry.grid(row=2, column=1, padx=10, pady=5)
 add_button = tk.Button(window, text="Add Product", command=add_product_gui)
 add_button.grid(row=3, column=0, columnspan=2, padx=10, pady=5, sticky="we")
 
+product_id_label = tk.Label(window, text="Product ID to Delete:")
+product_id_label.grid(row=4, column=0, padx=10, pady=5)
+product_id_entry = tk.Entry(window)
+product_id_entry.grid(row=4, column=1, padx=10, pady=5)
+
 def show_inventory():
     products = retrieve_products(conn)
     if products:
-        messagebox.showinfo("Inventory", "\n".join([f"{product[1]} - Quantity: {product[2]}, Price: {product[3]}, Last Modified By: {product[4]}" for product in products]))
+        messagebox.showinfo("Inventory", "\n".join([f"Name: {product[1]}\nQuantity: {product[2]}\nPrice: {product[3]}\nLast Modified By: {product[4]}" for product in products]))
     else:
         messagebox.showinfo("Inventory", "No products found!")
 
-# Create and place the "Show Inventory" button
+# Create and place the "Show Inventory" button as well as delete button
 show_inventory_button = tk.Button(window, text="Show Inventory", command=show_inventory)
-show_inventory_button.grid(row=4, column=0, columnspan=2, padx=10, pady=5, sticky="we")
+show_inventory_button.grid(row=6, column=0, columnspan=2, padx=10, pady=5, sticky="we")
+
+delete_button = tk.Button(window, text="Delete Product", command=delete_product_gui)
+delete_button.grid(row=5, column=0, columnspan=2, padx=10, pady=5, sticky="we")
 
 
 window.mainloop()
